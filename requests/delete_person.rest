@@ -7,3 +7,11 @@ Content-Type: application/json
     "name": "Poko Token",
     "number": "059-323114141442981"
 }
+###
+POST https://shielded-tundra-61219.herokuapp.com/api/persons
+Content-Type: application/json
+
+{
+    "name": "Poko Token",
+    "number": "059-323114141442981"
+}
