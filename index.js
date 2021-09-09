@@ -13,6 +13,17 @@ morgan.token('data', (req,res) =>  req.method === 'POST' ? JSON.stringify(req.bo
 app.use(morgan('tiny'))
 app.use(morgan(':data'))
 
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return response.status(400).send({ error: 'malformatted id' })
+    }
+  
+    next(error)
+  }
+
 //database
 const Person = require('./models/person')
 
@@ -26,16 +37,17 @@ const Person = require('./models/person')
     { id: 4, name: 'Mary Poppendieck', number: '39-23-6423122' }
 ]*/
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (request, response, next) => {
     Person
     .find({})
     .then(people => {
       response.json(people)
     })
+    .catch(error => next(error))
 })
 
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
     console.log(body.name, typeof(body.name))
     console.log(body.number, typeof(body.number))
@@ -45,7 +57,6 @@ app.post('/api/persons', (req, res) => {
         number: body.number,
     })
     
-    console.log('next')
     if (Person.find({name: body.name}).length === 0) {
         return res.status(400).json({
             error: 'person with that name already exists'
@@ -56,22 +67,43 @@ app.post('/api/persons', (req, res) => {
     person.save().then(savedPerson => {
         res.json(savedPerson)
     })
+    .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req,res) => {
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+  
+    const person = {
+      name: body.name,
+      number: body.number,
+    }
+  
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+      .then(updatedPerson => {
+        response.json(updatedPerson)
+      })
+      .catch(error => next(error))
+  })
+
+app.delete('/api/persons/:id', (req,res, next) => {
     const id = req.params.id
     console.log('deleting', id)
     Person
         .findByIdAndDelete(id)
         .then(deleted => res.status(204).end())
-        .catch(error => console.log('error'))
+        .catch(error => next(error))
     
 })
 
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
      Person.findById(req.params.id).then(person => {
-         res.json(person)
+         if (person){
+            res.json(person)
+         } else {
+             res.status(404).end()
+         }
      })
+     .catch(error => next(error))
 })
 
 app.get('/info', (req,res) => {
@@ -82,6 +114,13 @@ app.get('/info', (req,res) => {
         `)
 })
 
+//Handling errors: 
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
