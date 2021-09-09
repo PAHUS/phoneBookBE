@@ -107,11 +107,14 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 app.get('/info', (req,res) => {
+    Person.count({}, function(err, count){
+        res.send(
+            `<p>This phonebook contains ${count} persons.</p> 
+             ${Date()}
+            `)
+    });
     console.log('info reached')
-    res.send(
-        `<p>This phonebook contains ${Person.length} persons.</p> 
-         ${Date()}
-        `)
+    
 })
 
 //Handling errors: 
