@@ -4,8 +4,8 @@ POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "name": "Poko Token",
-    "number": "059-323114141442981"
+    "name": "Pokdo Token",
+    "number": "059-323111442981"
 }
 ###
 POST https://shielded-tundra-61219.herokuapp.com/api/persons
@@ -13,5 +13,5 @@ Content-Type: application/json
 
 {
     "name": "Poko Token",
-    "number": "059-323114141442981"
+    "number": "059-32311412981"
 }
